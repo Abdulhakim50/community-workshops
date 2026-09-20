@@ -13,9 +13,10 @@ export type Workshop = {
   capacity: number;
   confirmedCount: number;
   learningPoints: string[];
+  isDemo: boolean;
 };
 
-// Example content for the public pages. The database milestone will replace this source.
+// Example content used only when DATABASE_URL is not configured and by the seed script.
 const workshops: Workshop[] = [
   {
     slug: "urban-gardening-basics",
@@ -32,6 +33,7 @@ const workshops: Workshop[] = [
     organizer: "Neighborhood Learning Circle",
     capacity: 12,
     confirmedCount: 7,
+    isDemo: true,
     learningPoints: [
       "Choose plants that suit your light and space",
       "Prepare a container with the right soil and drainage",
@@ -53,6 +55,7 @@ const workshops: Workshop[] = [
     organizer: "Neighborhood Learning Circle",
     capacity: 16,
     confirmedCount: 16,
+    isDemo: true,
     learningPoints: [
       "Create reusable stamps from everyday materials",
       "Layer colors and textures into a print",
@@ -74,6 +77,7 @@ const workshops: Workshop[] = [
     organizer: "Neighborhood Learning Circle",
     capacity: 10,
     confirmedCount: 4,
+    isDemo: true,
     learningPoints: [
       "Sew a secure button by hand",
       "Mend a small tear with a basic stitch",

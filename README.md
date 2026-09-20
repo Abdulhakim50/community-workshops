@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The public browsing flow is in place: a home page, a workshop list, and individual workshop detail pages. The three workshops are clearly labeled example content stored in `src/lib/workshops.ts`; they are not real events. The list also has an empty state for when no workshops are published. Organizer publishing, live seat counts, and registration are not available yet.
+The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are also marked as fictional demo data in the database. Organizer publishing and attendee registration are not available yet.
 
 ## Run locally
 
@@ -35,7 +35,7 @@ npm.cmd run db:seed
 npm.cmd run db:verify
 ```
 
-The migration creates organizers, workshops, and registrations with status values, relationships, and basic constraints. The seed adds one fictional organizer, three example workshops, and fictional confirmed registrations using `example.test` addresses. It is safe to rerun without duplicating those rows. The public pages still use the example data module; connecting them to PostgreSQL is the next slice.
+The migrations create organizers, workshops, and registrations with status values, relationships, basic constraints, and a demo marker. The seed adds one fictional organizer, three demo workshops, and fictional confirmed registrations using `example.test` addresses. It is safe to rerun without duplicating those rows. When a database is configured but unavailable, the public pages show an error state; they do not silently switch to example content.
 
 When changing the schema, run `npm.cmd run db:generate`, review the generated SQL, and commit both the schema and migration. Never commit `.env.local` or a real connection string.
 
