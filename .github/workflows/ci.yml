@@ -8,6 +8,22 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: workshops_ci
+          POSTGRES_PASSWORD: workshops_ci_password
+          POSTGRES_DB: community_workshops
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U workshops_ci -d community_workshops"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://workshops_ci:workshops_ci_password@127.0.0.1:5432/community_workshops
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,3 +38,11 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Apply database migration
+        run: npm run db:migrate
+      - name: Seed example data
+        run: npm run db:seed
+      - name: Verify repeatable seed and database rows
+        run: |
+          npm run db:seed
+          npm run db:verify
