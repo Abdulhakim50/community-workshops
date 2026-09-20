@@ -1,6 +1,5 @@
 import { and, asc, eq, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { db } from "@/db/client";
 import { organizers, registrations, workshops } from "@/db/schema";
 import {
   getPublishedWorkshops as getExampleWorkshops,
@@ -8,28 +7,8 @@ import {
   type Workshop,
 } from "@/lib/workshops";
 
-const globalForPool = globalThis as typeof globalThis & { communityWorkshopsPool?: Pool };
-
-function getDatabase() {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    return null;
-  }
-
-  const pool = globalForPool.communityWorkshopsPool ?? new Pool({
-    connectionString,
-    max: 5,
-    allowExitOnIdle: true,
-  });
-  globalForPool.communityWorkshopsPool = pool;
-  return drizzle({ client: pool });
-}
-
 async function selectPublishedWorkshops(slug?: string): Promise<Workshop[]> {
-  const db = getDatabase();
-
-  if (!db) {
+  if (!process.env.DATABASE_URL) {
     return slug
       ? [getExampleWorkshopBySlug(slug)].filter((workshop): workshop is Workshop => Boolean(workshop))
       : getExampleWorkshops();
