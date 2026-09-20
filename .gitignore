@@ -4,6 +4,8 @@ out/
 coverage/
 playwright-report/
 test-results/
+.vercel/
+*.tsbuildinfo
 .env*
 !.env.example
 .DS_Store

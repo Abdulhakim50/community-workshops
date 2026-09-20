@@ -4,7 +4,26 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-Repository created. Application development has not started yet.
+The application foundation is in place: a home page, a workshops route, and a shared responsive layout. The workshops page is an honest empty state until workshop data and organizer tools are built. Registration is not available yet.
+
+## Run locally
+
+Requires Node.js 20.9 or newer. From this folder:
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open `http://localhost:3000`. On Windows PowerShell, `npm.cmd` avoids script-execution policy issues. If your npm registry mirror times out, run `npm.cmd ci --registry=https://registry.npmjs.org`.
+
+Useful checks:
+
+```powershell
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run build
+```
 
 ## First release
 
@@ -18,7 +37,7 @@ Payments, team accounts, and online video integration are outside the first rele
 
 ## Planned stack
 
-Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, Vitest, and Playwright. The application will be deployed only after its core workflow is working and tested.
+The installed foundation uses Next.js, React, TypeScript, and Tailwind CSS. PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, Vitest, and Playwright will be added when their features begin. Deployment comes after the core workflow works and is tested.
 
 ## How we work
 
