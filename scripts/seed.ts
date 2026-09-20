@@ -49,17 +49,24 @@ async function seed() {
           address: example.address,
           capacity: example.capacity,
           learningPoints: example.learningPoints,
+          isDemo: true,
           status: "published",
         })
         .onConflictDoNothing()
-        .returning({ id: workshops.id });
+        .returning({ id: workshops.id, organizerId: workshops.organizerId });
 
       const workshop = insertedWorkshop[0] ??
-        (await tx.select({ id: workshops.id }).from(workshops).where(eq(workshops.slug, example.slug)))[0];
+        (await tx.select({ id: workshops.id, organizerId: workshops.organizerId }).from(workshops).where(eq(workshops.slug, example.slug)))[0];
 
       if (!workshop) {
         throw new Error(`Could not find example workshop ${example.slug}.`);
       }
+      if (workshop.organizerId !== organizer.id) {
+        throw new Error(`Example slug ${example.slug} belongs to another organizer.`);
+      }
+
+      // Existing demo rows predate the is_demo column in some local databases.
+      await tx.update(workshops).set({ isDemo: true }).where(eq(workshops.id, workshop.id));
 
       if (example.confirmedCount > 0) {
         await tx.insert(registrations).values(

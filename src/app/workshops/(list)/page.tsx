@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getPublicWorkshops } from "@/lib/public-workshops";
 import {
   formatWorkshopDate,
   formatWorkshopTime,
   getAvailableSeats,
-  getPublishedWorkshops,
 } from "@/lib/workshops";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Workshops",
   description: "Explore hands-on community workshops and see the details for each session.",
 };
 
-export default function WorkshopsPage() {
-  const workshops = getPublishedWorkshops();
+export default async function WorkshopsPage() {
+  const { workshops, usingExampleData } = await getPublicWorkshops();
+  const hasDemoWorkshops = workshops.some((workshop) => workshop.isDemo);
 
   return (
     <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-24">
@@ -37,7 +40,10 @@ export default function WorkshopsPage() {
       ) : (
         <>
           <div className="mt-10 rounded-xl border border-[#dce1d6] bg-[#eff3e9] px-5 py-4 text-sm leading-6 text-[#405549]">
-            <strong>Sample schedule:</strong> These workshops are example content while we build organizer publishing and registration. Seats shown are illustrative; booking is not open yet.
+            {usingExampleData || hasDemoWorkshops ? (
+              <><strong>Demo schedule:</strong> Workshops marked as examples are fictional, and their seat counts are illustrative. </>
+            ) : null}
+            Registration is not open yet.
           </div>
           <div className="mt-7 grid gap-5 md:grid-cols-2">
             {workshops.map((workshop) => {
@@ -48,7 +54,9 @@ export default function WorkshopsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#537b26]">{workshop.category}</p>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${availableSeats > 0 ? "bg-[#e7f4d4] text-[#315c24]" : "bg-[#f2e6dc] text-[#84502e]"}`}>
-                      {availableSeats > 0 ? `${availableSeats} sample seats left` : "Sample session full"}
+                      {availableSeats > 0
+                        ? `${availableSeats} ${workshop.isDemo ? "example seats" : "seats"} left`
+                        : workshop.isDemo ? "Example session full" : "Full"}
                     </span>
                   </div>
                   <h2 className="mt-5 text-2xl font-bold tracking-[-0.035em]">

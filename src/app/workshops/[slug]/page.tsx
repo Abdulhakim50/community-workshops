@@ -1,31 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getPublicWorkshopBySlug } from "@/lib/public-workshops";
 import {
   formatWorkshopDate,
   formatWorkshopTime,
   getAvailableSeats,
-  getPublishedWorkshops,
-  getWorkshopBySlug,
 } from "@/lib/workshops";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// Only the example slugs exist until workshops are stored in a database.
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getPublishedWorkshops().map((workshop) => ({ slug: workshop.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const workshop = getWorkshopBySlug(slug);
+  const workshop = await getPublicWorkshopBySlug(slug);
 
   if (!workshop) {
-    return { title: "Workshop not found" };
+    notFound();
   }
 
   return { title: workshop.title, description: workshop.summary };
@@ -33,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WorkshopDetailPage({ params }: Props) {
   const { slug } = await params;
-  const workshop = getWorkshopBySlug(slug);
+  const workshop = await getPublicWorkshopBySlug(slug);
 
   if (!workshop) {
     notFound();
@@ -47,9 +41,11 @@ export default async function WorkshopDetailPage({ params }: Props) {
         <span className="mr-2" aria-hidden="true">←</span> All workshops
       </Link>
 
-      <div className="mt-7 rounded-2xl border border-[#dce1d6] bg-[#eff3e9] px-5 py-4 text-sm leading-6 text-[#405549]">
-        <strong>Example workshop:</strong> This page shows sample information. Registration is not open yet.
-      </div>
+      {workshop.isDemo ? (
+        <div className="mt-7 rounded-2xl border border-[#dce1d6] bg-[#eff3e9] px-5 py-4 text-sm leading-6 text-[#405549]">
+          <strong>Demo workshop:</strong> This event is fictional, and its seat count is illustrative. Registration is not open yet.
+        </div>
+      ) : null}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-16">
         <div>
@@ -81,7 +77,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
             <div><dt className="text-sm font-semibold text-[#596760]">Date and time</dt><dd className="mt-1 font-bold">{formatWorkshopDate(workshop)}<br />{formatWorkshopTime(workshop)}</dd></div>
             <div><dt className="text-sm font-semibold text-[#596760]">Location</dt><dd className="mt-1 font-bold">{workshop.venue}<br /><span className="font-normal text-[#405549]">{workshop.address}</span></dd></div>
             <div><dt className="text-sm font-semibold text-[#596760]">Organizer</dt><dd className="mt-1 font-bold">{workshop.organizer}</dd></div>
-            <div><dt className="text-sm font-semibold text-[#596760]">Sample availability</dt><dd className="mt-1 font-bold">{availableSeats > 0 ? `${availableSeats} of ${workshop.capacity} seats left` : `Full (${workshop.capacity} seats)`}</dd></div>
+            <div><dt className="text-sm font-semibold text-[#596760]">{workshop.isDemo ? "Example availability" : "Availability"}</dt><dd className="mt-1 font-bold">{availableSeats > 0 ? `${availableSeats} of ${workshop.capacity} seats left` : `Full (${workshop.capacity} seats)`}</dd></div>
           </dl>
           <p className="mt-7 rounded-xl bg-[#eff3e9] px-4 py-3 text-sm leading-6 text-[#405549]">
             Registration and the waitlist will be available in a later feature.
