@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { user } from "./auth-schema";
 import {
   boolean,
   check,
@@ -24,9 +25,11 @@ export const registrationStatus = pgEnum("registration_status", [
   "canceled",
 ]);
 
-// Organizer sign-in will link to this profile in a later slice.
 export const organizers = pgTable("organizers", {
   id: uuid("id").defaultRandom().primaryKey(),
+  authUserId: text("auth_user_id")
+    .unique()
+    .references(() => user.id),
   name: text("name").notNull(),
   contactEmail: text("contact_email").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

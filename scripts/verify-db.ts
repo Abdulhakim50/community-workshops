@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { config } from "dotenv";
 import { Pool } from "pg";
-import { getPublicWorkshopBySlug, getPublicWorkshops } from "../src/lib/public-workshops";
 
 config({ path: ".env.local", quiet: true });
 
@@ -12,6 +11,7 @@ if (!process.env.DATABASE_URL) {
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function verify() {
+  const { getPublicWorkshopBySlug, getPublicWorkshops } = await import("../src/lib/public-workshops");
   const result = await pool.query<{
     organizers: string;
     workshops: string;

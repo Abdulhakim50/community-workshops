@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are also marked as fictional demo data in the database. Organizer publishing and attendee registration are not available yet.
+The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are also marked as fictional demo data in the database. Organizers can create accounts, sign in, and see their own dashboard. Workshop publishing and attendee registration are not available yet.
 
 ## Run locally
 
@@ -27,7 +27,7 @@ npm.cmd run build
 
 ## Database development
 
-The database schema is in `src/db/schema.ts`, and reviewed SQL migrations are in `drizzle/`. PostgreSQL 18 is used locally and in CI. Create a local database, copy `.env.example` to `.env.local`, and replace the example connection string with your own. `.env.local` is ignored by Git.
+The database schema is in `src/db/schema.ts` and `src/db/auth-schema.ts`, and reviewed SQL migrations are in `drizzle/`. PostgreSQL 18 is used locally and in CI. Create a local database, copy `.env.example` to `.env.local`, replace the example connection string, and set a random `BETTER_AUTH_SECRET` of at least 32 characters. `BETTER_AUTH_URL` must match the address used to open the site. `.env.local` is ignored by Git.
 
 ```powershell
 npm.cmd run db:migrate
@@ -35,7 +35,7 @@ npm.cmd run db:seed
 npm.cmd run db:verify
 ```
 
-The migrations create organizers, workshops, and registrations with status values, relationships, basic constraints, and a demo marker. The seed adds one fictional organizer, three demo workshops, and fictional confirmed registrations using `example.test` addresses. It is safe to rerun without duplicating those rows. When a database is configured but unavailable, the public pages show an error state; they do not silently switch to example content.
+The migrations create organizers, workshops, registrations, and the account/session tables. The seed adds one fictional organizer, three demo workshops, and fictional confirmed registrations using `example.test` addresses. It is safe to rerun without duplicating those rows. The seeded organizer cannot be claimed by signing up with its email. New accounts get their own organizer profile and can only see workshops linked to that profile. When a database is configured but unavailable, the public pages show an error state; they do not silently switch to example content.
 
 When changing the schema, run `npm.cmd run db:generate`, review the generated SQL, and commit both the schema and migration. Never commit `.env.local` or a real connection string.
 
@@ -51,7 +51,7 @@ Payments, team accounts, and online video integration are outside the first rele
 
 ## Planned stack
 
-The installed foundation uses Next.js, React, TypeScript, and Tailwind CSS. PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, Vitest, and Playwright will be added when their features begin. Deployment comes after the core workflow works and is tested.
+The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, and Better Auth. Zod, Resend, Vitest, and Playwright remain planned for their relevant features. Deployment comes after the core workflow works and is tested.
 
 ## How we work
 

@@ -36,6 +36,7 @@ export default function RootLayout({
               <nav aria-label="Main navigation" className="flex w-full items-center justify-between gap-5 text-sm font-semibold sm:w-auto sm:justify-start sm:gap-8">
                 <Link href="/" className="hover:text-[#537b26]">Home</Link>
                 <Link href="/workshops" className="hover:text-[#537b26]">Workshops</Link>
+                <Link href="/organizer" className="hover:text-[#537b26]">Organizer</Link>
               </nav>
             </div>
           </header>
