@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The application foundation is in place: a home page, a workshops route, and a shared responsive layout. The workshops page is an honest empty state until workshop data and organizer tools are built. Registration is not available yet.
+The public browsing flow is in place: a home page, a workshop list, and individual workshop detail pages. The three workshops are clearly labeled example content stored in `src/lib/workshops.ts`; they are not real events. The list also has an empty state for when no workshops are published. Organizer publishing, live seat counts, and registration are not available yet.
 
 ## Run locally
 
