@@ -25,6 +25,20 @@ npm.cmd run typecheck
 npm.cmd run build
 ```
 
+## Database development
+
+The database schema is in `src/db/schema.ts`, and reviewed SQL migrations are in `drizzle/`. PostgreSQL 18 is used locally and in CI. Create a local database, copy `.env.example` to `.env.local`, and replace the example connection string with your own. `.env.local` is ignored by Git.
+
+```powershell
+npm.cmd run db:migrate
+npm.cmd run db:seed
+npm.cmd run db:verify
+```
+
+The migration creates organizers, workshops, and registrations with status values, relationships, and basic constraints. The seed adds one fictional organizer, three example workshops, and fictional confirmed registrations using `example.test` addresses. It is safe to rerun without duplicating those rows. The public pages still use the example data module; connecting them to PostgreSQL is the next slice.
+
+When changing the schema, run `npm.cmd run db:generate`, review the generated SQL, and commit both the schema and migration. Never commit `.env.local` or a real connection string.
+
 ## First release
 
 - Public workshop list and detail pages
