@@ -43,7 +43,7 @@ export default async function WorkshopsPage() {
             {usingExampleData || hasDemoWorkshops ? (
               <><strong>Demo schedule:</strong> Workshops marked as examples are fictional, and their seat counts are illustrative. </>
             ) : null}
-            Registration is not open yet.
+            Registration is available for real organizer-published workshops; fictional examples remain disabled.
           </div>
           <div className="mt-7 grid gap-5 md:grid-cols-2">
             {workshops.map((workshop) => {

@@ -37,6 +37,7 @@ async function selectPublishedWorkshops(slug?: string): Promise<Workshop[]> {
     .orderBy(asc(workshops.startsAt));
 
   return rows.map(({ workshop, organizerName, confirmedCount }) => ({
+    id: workshop.id,
     slug: workshop.slug,
     title: workshop.title,
     summary: workshop.summary,
