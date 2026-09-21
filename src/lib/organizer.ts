@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/client";
@@ -33,4 +33,14 @@ export async function getOrganizerWorkshops(organizerId: string) {
     .from(workshops)
     .where(eq(workshops.organizerId, organizerId))
     .orderBy(workshops.startsAt);
+}
+
+export async function getOrganizerWorkshop(organizerId: string, workshopId: string) {
+  const [workshop] = await db
+    .select()
+    .from(workshops)
+    .where(and(eq(workshops.id, workshopId), eq(workshops.organizerId, organizerId)))
+    .limit(1);
+
+  return workshop;
 }
