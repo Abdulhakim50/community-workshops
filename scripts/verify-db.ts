@@ -20,10 +20,10 @@ async function verify() {
     demo: string;
   }>(`
     SELECT
-      (SELECT count(*) FROM organizers) AS organizers,
-      (SELECT count(*) FROM workshops) AS workshops,
-      (SELECT count(*) FROM registrations) AS registrations,
-      (SELECT count(*) FROM workshops WHERE status = 'published') AS published,
+      (SELECT count(*) FROM organizers WHERE contact_email = 'organizer@example.test') AS organizers,
+      (SELECT count(*) FROM workshops WHERE is_demo) AS workshops,
+      (SELECT count(*) FROM registrations r JOIN workshops w ON w.id = r.workshop_id WHERE w.is_demo) AS registrations,
+      (SELECT count(*) FROM workshops WHERE is_demo AND status = 'published') AS published,
       (SELECT count(*) FROM workshops WHERE is_demo) AS demo
   `);
 
@@ -37,7 +37,9 @@ async function verify() {
   const publicResult = await getPublicWorkshops();
   assert.equal(publicResult.usingExampleData, false);
   assert.deepEqual(
-    publicResult.workshops.map((workshop) => [workshop.slug, workshop.confirmedCount]),
+    publicResult.workshops
+      .filter((workshop) => workshop.isDemo)
+      .map((workshop) => [workshop.slug, workshop.confirmedCount]),
     [
       ["urban-gardening-basics", 7],
       ["printmaking-with-everyday-materials", 16],

@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are also marked as fictional demo data in the database. Organizers can create accounts, sign in, and see their own dashboard. Workshop publishing and attendee registration are not available yet.
+The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are also marked as fictional demo data in the database. Organizers can create accounts, sign in, and create, edit, publish, or cancel their own workshops. Attendee registration is not available yet.
 
 ## Run locally
 
