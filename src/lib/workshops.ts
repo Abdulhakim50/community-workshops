@@ -1,4 +1,5 @@
 export type Workshop = {
+  id?: string;
   slug: string;
   title: string;
   summary: string;

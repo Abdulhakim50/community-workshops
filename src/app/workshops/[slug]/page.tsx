@@ -7,6 +7,7 @@ import {
   formatWorkshopTime,
   getAvailableSeats,
 } from "@/lib/workshops";
+import { RegistrationForm } from "./registration-form";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -43,7 +44,7 @@ export default async function WorkshopDetailPage({ params }: Props) {
 
       {workshop.isDemo ? (
         <div className="mt-7 rounded-2xl border border-[#dce1d6] bg-[#eff3e9] px-5 py-4 text-sm leading-6 text-[#405549]">
-          <strong>Demo workshop:</strong> This event is fictional, and its seat count is illustrative. Registration is not open yet.
+          <strong>Demo workshop:</strong> This event is fictional, and its seat count is illustrative. Registration is disabled for example events.
         </div>
       ) : null}
 
@@ -79,9 +80,13 @@ export default async function WorkshopDetailPage({ params }: Props) {
             <div><dt className="text-sm font-semibold text-[#596760]">Organizer</dt><dd className="mt-1 font-bold">{workshop.organizer}</dd></div>
             <div><dt className="text-sm font-semibold text-[#596760]">{workshop.isDemo ? "Example availability" : "Availability"}</dt><dd className="mt-1 font-bold">{availableSeats > 0 ? `${availableSeats} of ${workshop.capacity} seats left` : `Full (${workshop.capacity} seats)`}</dd></div>
           </dl>
-          <p className="mt-7 rounded-xl bg-[#eff3e9] px-4 py-3 text-sm leading-6 text-[#405549]">
-            Registration and the waitlist will be available in a later feature.
-          </p>
+          {workshop.id && !workshop.isDemo ? (
+            <RegistrationForm workshopId={workshop.id} isFull={availableSeats === 0} />
+          ) : (
+            <p className="mt-7 rounded-xl bg-[#eff3e9] px-4 py-3 text-sm leading-6 text-[#405549]">
+              Registration is disabled for this fictional example.
+            </p>
+          )}
         </aside>
       </div>
     </article>

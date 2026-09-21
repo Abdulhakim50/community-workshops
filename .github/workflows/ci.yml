@@ -42,6 +42,8 @@ jobs:
         run: npm run build
       - name: Apply database migration
         run: npm run db:migrate
+      - name: Test registration rules
+        run: npm test
       - name: Seed example data
         run: npm run db:seed
       - name: Verify repeatable seed and database rows
