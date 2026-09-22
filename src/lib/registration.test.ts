@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { organizers, registrations, workshops } from "@/db/schema";
-import { registerAttendee } from "@/lib/registration";
+import { cancelRegistration, registerAttendee } from "@/lib/registration";
 
 describe("registration capacity", () => {
   const organizerId = randomUUID();
@@ -73,5 +73,112 @@ describe("registration capacity", () => {
 
     expect(first.outcome).toBe("waitlisted");
     expect(duplicate).toEqual({ outcome: "duplicate" });
+  });
+});
+
+describe("cancellation and waitlist promotion", () => {
+  const organizerId = randomUUID();
+  const orderedWorkshopId = randomUUID();
+  const concurrentWorkshopId = randomUUID();
+
+  beforeAll(async () => {
+    const startsAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const endsAt = new Date(startsAt.getTime() + 2 * 60 * 60 * 1000);
+    await db.insert(organizers).values({
+      id: organizerId,
+      name: "Cancellation Test Organizer",
+      contactEmail: `cancellation-test-${organizerId}@example.test`,
+    });
+    await db.insert(workshops).values([
+      {
+        id: orderedWorkshopId,
+        organizerId,
+        slug: `ordered-promotion-test-${orderedWorkshopId}`,
+        title: "Ordered promotion test",
+        summary: "A workshop fixture for ordered waitlist promotion.",
+        description: "This database fixture verifies that the earliest waitlisted attendee receives an open seat.",
+        category: "Testing",
+        startsAt,
+        endsAt,
+        timeZone: "America/Los_Angeles",
+        venue: "Test Room",
+        address: "100 Test Street",
+        capacity: 1,
+        learningPoints: ["Test ordered promotion"],
+        status: "published" as const,
+      },
+      {
+        id: concurrentWorkshopId,
+        organizerId,
+        slug: `concurrent-cancellation-test-${concurrentWorkshopId}`,
+        title: "Concurrent cancellation test",
+        summary: "A workshop fixture for concurrent cancellations.",
+        description: "This database fixture verifies that simultaneous cancellations promote the correct number of attendees.",
+        category: "Testing",
+        startsAt,
+        endsAt,
+        timeZone: "America/Los_Angeles",
+        venue: "Test Room",
+        address: "100 Test Street",
+        capacity: 2,
+        learningPoints: ["Test concurrent cancellation"],
+        status: "published" as const,
+      },
+    ]);
+  });
+
+  afterAll(async () => {
+    await db.delete(registrations).where(eq(registrations.workshopId, orderedWorkshopId));
+    await db.delete(registrations).where(eq(registrations.workshopId, concurrentWorkshopId));
+    await db.delete(workshops).where(eq(workshops.id, orderedWorkshopId));
+    await db.delete(workshops).where(eq(workshops.id, concurrentWorkshopId));
+    await db.delete(organizers).where(eq(organizers.id, organizerId));
+  });
+
+  it("promotes waitlisted attendees in registration order and rejects token reuse", async () => {
+    const first = await registerAttendee({ workshopId: orderedWorkshopId, attendeeName: "Confirmed", attendeeEmail: `confirmed-${orderedWorkshopId}@example.test` });
+    const second = await registerAttendee({ workshopId: orderedWorkshopId, attendeeName: "First Waiting", attendeeEmail: `first-waiting-${orderedWorkshopId}@example.test` });
+    const third = await registerAttendee({ workshopId: orderedWorkshopId, attendeeName: "Second Waiting", attendeeEmail: `second-waiting-${orderedWorkshopId}@example.test` });
+    if (first.outcome !== "confirmed" || second.outcome !== "waitlisted" || third.outcome !== "waitlisted") {
+      throw new Error("Unexpected registration setup result");
+    }
+
+    expect(await cancelRegistration(first.cancellationToken)).toEqual({
+      outcome: "canceled",
+      promoted: true,
+    });
+    expect(await cancelRegistration(first.cancellationToken)).toEqual({ outcome: "unavailable" });
+
+    const stored = await db
+      .select({ attendeeName: registrations.attendeeName, status: registrations.status })
+      .from(registrations)
+      .where(eq(registrations.workshopId, orderedWorkshopId));
+    expect(stored.find((row) => row.attendeeName === "First Waiting")?.status).toBe("confirmed");
+    expect(stored.find((row) => row.attendeeName === "Second Waiting")?.status).toBe("waitlisted");
+  });
+
+  it("serializes simultaneous cancellations and promotes exactly enough people", async () => {
+    const results = [];
+    for (let index = 0; index < 4; index += 1) {
+      results.push(await registerAttendee({
+        workshopId: concurrentWorkshopId,
+        attendeeName: `Concurrent Cancellation ${index + 1}`,
+        attendeeEmail: `concurrent-cancellation-${index + 1}-${concurrentWorkshopId}@example.test`,
+      }));
+    }
+    const confirmed = results.filter((result) => result.outcome === "confirmed");
+    expect(confirmed).toHaveLength(2);
+
+    await Promise.all(confirmed.map((result) =>
+      result.outcome === "confirmed" ? cancelRegistration(result.cancellationToken) : undefined,
+    ));
+
+    const stored = await db
+      .select({ status: registrations.status })
+      .from(registrations)
+      .where(eq(registrations.workshopId, concurrentWorkshopId));
+    expect(stored.filter((row) => row.status === "confirmed")).toHaveLength(2);
+    expect(stored.filter((row) => row.status === "waitlisted")).toHaveLength(0);
+    expect(stored.filter((row) => row.status === "canceled")).toHaveLength(2);
   });
 });

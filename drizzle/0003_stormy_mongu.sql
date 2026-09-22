@@ -1,0 +1,2 @@
+ALTER TABLE "registrations" ADD COLUMN "cancellation_token_hash" text;--> statement-breakpoint
+ALTER TABLE "registrations" ADD CONSTRAINT "registrations_cancellation_token_hash_unique" UNIQUE("cancellation_token_hash");

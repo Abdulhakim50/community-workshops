@@ -13,6 +13,7 @@ const registrationSchema = z.object({
 export type RegistrationActionState = {
   outcome?: "confirmed" | "waitlisted" | "duplicate" | "unavailable" | "error";
   position?: number;
+  cancellationToken?: string;
   fieldErrors?: Partial<Record<"attendeeName" | "attendeeEmail", string>>;
 };
 
