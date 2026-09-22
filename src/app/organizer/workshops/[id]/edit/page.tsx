@@ -26,6 +26,9 @@ export default async function EditWorkshopPage({ params, searchParams }: Props) 
         <div>
           <p className="text-sm font-semibold uppercase tracking-widest text-[#537b26]">{workshop.status} workshop</p>
           <h1 className="mt-3 text-4xl font-bold">Edit workshop</h1>
+          <Link href={`/organizer/workshops/${workshop.id}/attendees`} className="mt-3 inline-flex text-sm font-bold text-[#315b47] hover:underline">
+            View attendees and check-in
+          </Link>
         </div>
         <WorkshopStatusActions workshopId={workshop.id} status={workshop.status} />
       </div>
