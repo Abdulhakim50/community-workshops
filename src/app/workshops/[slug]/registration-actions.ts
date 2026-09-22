@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { sendAttendeeNotification, type NotificationDelivery } from "@/lib/notifications";
 import { registerAttendee } from "@/lib/registration";
 
 const registrationSchema = z.object({
@@ -14,6 +15,7 @@ export type RegistrationActionState = {
   outcome?: "confirmed" | "waitlisted" | "duplicate" | "unavailable" | "error";
   position?: number;
   cancellationToken?: string;
+  notificationDelivery?: NotificationDelivery;
   fieldErrors?: Partial<Record<"attendeeName" | "attendeeEmail", string>>;
 };
 
@@ -41,7 +43,17 @@ export async function submitRegistration(
   try {
     const result = await registerAttendee(parsed.data);
     revalidatePath("/workshops");
-    return result;
+    if (result.outcome !== "confirmed" && result.outcome !== "waitlisted") return result;
+
+    const notificationDelivery = result.outcome === "confirmed"
+      ? await sendAttendeeNotification({ ...result, kind: "confirmed" })
+      : await sendAttendeeNotification({ ...result, kind: "waitlisted" });
+    return {
+      outcome: result.outcome,
+      position: result.outcome === "waitlisted" ? result.position : undefined,
+      cancellationToken: result.cancellationToken,
+      notificationDelivery,
+    };
   } catch (error) {
     console.error("Could not register attendee", error);
     return { outcome: "error" };
