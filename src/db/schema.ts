@@ -75,6 +75,7 @@ export const registrations = pgTable(
       .references(() => workshops.id),
     attendeeName: text("attendee_name").notNull(),
     attendeeEmail: text("attendee_email").notNull(),
+    cancellationTokenHash: text("cancellation_token_hash").unique(),
     status: registrationStatus("status").notNull(),
     registeredAt: timestamp("registered_at", { withTimezone: true }).defaultNow().notNull(),
     canceledAt: timestamp("canceled_at", { withTimezone: true }),

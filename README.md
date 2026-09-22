@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are marked as fictional and cannot accept registrations. Organizers can create accounts, sign in, and create, edit, publish, or cancel their own workshops. Attendees register for real workshops by name and email; PostgreSQL transactions enforce capacity, prevent active duplicates, and assign ordered waitlist positions.
+The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are marked as fictional and cannot accept registrations. Organizers can create accounts, sign in, and create, edit, publish, or cancel their own workshops. Attendees register for real workshops by name and email; PostgreSQL transactions enforce capacity, prevent active duplicates, and assign ordered waitlist positions. Each new registration receives a private cancellation link. Canceling a confirmed registration immediately promotes the earliest active waitlisted attendee.
 
 ## Run locally
 
@@ -45,14 +45,14 @@ When changing the schema, run `npm.cmd run db:generate`, review the generated SQ
 - Public workshop list and detail pages
 - Organizer account and workshop management
 - Registration with a reliable seat limit and duplicate prevention
-- Cancellation and ordered waitlist promotion
-- Confirmation notifications and organizer check-in
+- Confirmation and promotion notifications
+- Organizer attendee views and check-in
 
 Payments, team accounts, and online video integration are outside the first release.
 
 ## Planned stack
 
-The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, and Better Auth. Zod, Resend, Vitest, and Playwright remain planned for their relevant features. Deployment comes after the core workflow works and is tested.
+The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, and Vitest. Resend and Playwright remain planned for notifications and browser testing. Deployment comes after the core workflow works and is tested.
 
 ## How we work
 

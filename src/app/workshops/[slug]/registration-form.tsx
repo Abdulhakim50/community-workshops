@@ -10,10 +10,10 @@ export function RegistrationForm({ workshopId, isFull }: { workshopId: string; i
   const [state, formAction, pending] = useActionState(submitRegistration, initialState);
 
   if (state.outcome === "confirmed") {
-    return <Result title="Your seat is confirmed" message="You are registered for this workshop. Email notifications will be added in the next milestone." />;
+    return <Result title="Your seat is confirmed" message="You are registered for this workshop." cancellationToken={state.cancellationToken} />;
   }
   if (state.outcome === "waitlisted") {
-    return <Result title="You joined the waitlist" message={`You are number ${state.position} on the waitlist. We will notify you when a seat opens once email notifications are enabled.`} />;
+    return <Result title="You joined the waitlist" message={`You are number ${state.position} on the waitlist. Email notifications will be added in the next milestone.`} cancellationToken={state.cancellationToken} />;
   }
 
   const message = state.outcome === "duplicate"
@@ -50,11 +50,17 @@ export function RegistrationForm({ workshopId, isFull }: { workshopId: string; i
   );
 }
 
-function Result({ title, message }: { title: string; message: string }) {
+function Result({ title, message, cancellationToken }: { title: string; message: string; cancellationToken?: string }) {
   return (
     <div className="mt-7 rounded-xl bg-[#e7f4d4] px-5 py-5 text-[#315c24]" role="status">
       <h2 className="font-bold">{title}</h2>
       <p className="mt-2 text-sm leading-6">{message}</p>
+      {cancellationToken && (
+        <p className="mt-3 text-sm leading-6">
+          Save this private link if you may need to cancel: {" "}
+          <a className="font-bold underline" href={`/registrations/cancel/${cancellationToken}`}>manage registration</a>.
+        </p>
+      )}
     </div>
   );
 }
