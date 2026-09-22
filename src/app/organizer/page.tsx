@@ -47,7 +47,10 @@ export default async function OrganizerPage({ searchParams }: { searchParams: Pr
                   <Link href={`/organizer/workshops/${workshop.id}/edit`} className="font-semibold hover:text-[#537b26] hover:underline">{workshop.title}</Link>
                   <p className="mt-1 text-sm capitalize text-[#596760]">{workshop.status} · {workshop.startsAt.toLocaleDateString("en-US", { timeZone: "UTC", year: "numeric", month: "short", day: "numeric" })}</p>
                 </div>
-                <Link href={`/organizer/workshops/${workshop.id}/edit`} className="text-sm font-bold text-[#315b47] hover:underline">Manage</Link>
+                <div className="flex gap-4">
+                  <Link href={`/organizer/workshops/${workshop.id}/attendees`} className="text-sm font-bold text-[#315b47] hover:underline">Attendees</Link>
+                  <Link href={`/organizer/workshops/${workshop.id}/edit`} className="text-sm font-bold text-[#315b47] hover:underline">Manage</Link>
+                </div>
               </li>
             ))}
           </ul>
