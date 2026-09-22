@@ -143,9 +143,14 @@ describe("cancellation and waitlist promotion", () => {
       throw new Error("Unexpected registration setup result");
     }
 
-    expect(await cancelRegistration(first.cancellationToken)).toEqual({
-      outcome: "canceled",
-      promoted: true,
+    const cancellation = await cancelRegistration(first.cancellationToken);
+    expect(cancellation.outcome).toBe("canceled");
+    if (cancellation.outcome !== "canceled") throw new Error("Expected cancellation result");
+    expect(cancellation.promotion).toMatchObject({
+      registrationId: second.registrationId,
+      cancellationToken: second.cancellationToken,
+      attendeeName: "First Waiting",
+      attendeeEmail: `first-waiting-${orderedWorkshopId}@example.test`,
     });
     expect(await cancelRegistration(first.cancellationToken)).toEqual({ outcome: "unavailable" });
 

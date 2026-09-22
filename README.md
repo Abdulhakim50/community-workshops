@@ -4,7 +4,7 @@ A web application for organizers to publish free, in-person workshops and manage
 
 ## Status
 
-The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are marked as fictional and cannot accept registrations. Organizers can create accounts, sign in, and create, edit, publish, or cancel their own workshops. Attendees register for real workshops by name and email; PostgreSQL transactions enforce capacity, prevent active duplicates, and assign ordered waitlist positions. Each new registration receives a private cancellation link. Canceling a confirmed registration immediately promotes the earliest active waitlisted attendee.
+The public browsing flow has a home page, a workshop list, and individual detail pages. With `DATABASE_URL` configured, the pages read published workshops and confirmed registration counts from PostgreSQL on each request. Without it, they show clearly labeled examples from `src/lib/workshops.ts`. The seed workshops are marked as fictional and cannot accept registrations. Organizers can create accounts, sign in, and create, edit, publish, or cancel their own workshops. Attendees register for real workshops by name and email; PostgreSQL transactions enforce capacity, prevent active duplicates, and assign ordered waitlist positions. Each new registration receives a private cancellation link and an email when delivery is configured. Canceling a confirmed registration immediately promotes and emails the earliest active waitlisted attendee.
 
 ## Run locally
 
@@ -40,19 +40,24 @@ The migrations create organizers, workshops, registrations, and the account/sess
 
 When changing the schema, run `npm.cmd run db:generate`, review the generated SQL, and commit both the schema and migration. Never commit `.env.local` or a real connection string.
 
+## Email notifications
+
+Registration confirmations, waitlist notices, and promotion notices use Resend. In production, set `APP_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, and a stable `CANCELLATION_TOKEN_SECRET` of at least 32 characters. `EMAIL_FROM` must use a domain verified in Resend. Without the Resend values, registration and cancellation still work and the application displays the private cancellation link in the browser, but no email is sent.
+
+Notification requests use a registration-specific idempotency key. Provider failures never roll back a successful registration, cancellation, or promotion.
+
 ## First release
 
 - Public workshop list and detail pages
 - Organizer account and workshop management
 - Registration with a reliable seat limit and duplicate prevention
-- Confirmation and promotion notifications
 - Organizer attendee views and check-in
 
 Payments, team accounts, and online video integration are outside the first release.
 
 ## Planned stack
 
-The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, and Vitest. Resend and Playwright remain planned for notifications and browser testing. Deployment comes after the core workflow works and is tested.
+The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, and Vitest. Playwright remains planned for browser testing. Deployment comes after the core workflow works and is tested.
 
 ## How we work
 
