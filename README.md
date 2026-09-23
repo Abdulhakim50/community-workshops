@@ -23,8 +23,11 @@ Useful checks:
 npm.cmd run lint
 npm.cmd run typecheck
 npm.cmd test
+npm.cmd run test:e2e
 npm.cmd run build
 ```
+
+The Playwright browser test requires the local PostgreSQL database and Chrome or Chromium. It reuses or starts the local app on port 3000, exercises the organizer-to-attendee journey, and removes its generated records afterward. CI runs the same journey with Playwright's pinned Chromium build on port 3001.
 
 ## Database development
 
@@ -57,7 +60,7 @@ Payments, team accounts, and online video integration are outside the first rele
 
 ## Planned stack
 
-The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, and Vitest. Playwright remains planned for browser testing. Deployment comes after the core workflow works and is tested.
+The current stack uses Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth, Zod, Resend, Vitest, and Playwright. Deployment comes after the core workflow works and is tested.
 
 ## How we work
 
