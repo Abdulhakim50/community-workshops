@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendAttendeeNotification } from "@/lib/notifications";
 import { cancelRegistration } from "@/lib/registration";
@@ -21,7 +20,6 @@ export async function submitCancellation(
 
   try {
     const result = await cancelRegistration(token.data);
-    revalidatePath("/workshops");
     if (result.outcome === "unavailable") return result;
     if (result.promotion) {
       await sendAttendeeNotification({ ...result.promotion, kind: "promoted" });
