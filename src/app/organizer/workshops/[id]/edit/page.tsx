@@ -8,7 +8,7 @@ import { WorkshopStatusActions } from "../../status-actions";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ created?: string; saved?: string }>;
+  searchParams: Promise<{ created?: string; saved?: string; promoted?: string; unsent?: string }>;
 };
 
 export const metadata: Metadata = { title: "Edit workshop" };
@@ -19,6 +19,8 @@ export default async function EditWorkshopPage({ params, searchParams }: Props) 
   const workshop = await getOrganizerWorkshop(organizer.id, id);
   if (!workshop) notFound();
   const notice = await searchParams;
+  const promoted = Math.min(10_000, Math.max(0, Number.parseInt(notice.promoted ?? "0", 10) || 0));
+  const unsent = Math.min(promoted, Math.max(0, Number.parseInt(notice.unsent ?? "0", 10) || 0));
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
@@ -36,6 +38,8 @@ export default async function EditWorkshopPage({ params, searchParams }: Props) 
       {(notice.created || notice.saved) && (
         <p className="mt-7 rounded-xl bg-[#e7f4d4] px-5 py-4 text-sm font-semibold text-[#315c24]" role="status">
           {notice.created ? "Draft created. Review it, then publish when it is ready." : "Changes saved."}
+          {notice.saved && promoted > 0 && ` ${promoted} ${promoted === 1 ? "attendee was" : "attendees were"} promoted from the waitlist.`}
+          {notice.saved && unsent > 0 && ` Promotion emails were not sent to ${unsent} ${unsent === 1 ? "attendee" : "attendees"}. Review the attendee list and contact them directly.`}
         </p>
       )}
 

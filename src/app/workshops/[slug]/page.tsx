@@ -8,6 +8,7 @@ import {
   getAvailableSeats,
 } from "@/lib/workshops";
 import { RegistrationForm } from "./registration-form";
+import { canAcceptAttendees } from "@/lib/workshop-eligibility";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -80,11 +81,13 @@ export default async function WorkshopDetailPage({ params }: Props) {
             <div><dt className="text-sm font-semibold text-[#596760]">Organizer</dt><dd className="mt-1 font-bold">{workshop.organizer}</dd></div>
             <div><dt className="text-sm font-semibold text-[#596760]">{workshop.isDemo ? "Example availability" : "Availability"}</dt><dd className="mt-1 font-bold">{availableSeats > 0 ? `${availableSeats} of ${workshop.capacity} seats left` : `Full (${workshop.capacity} seats)`}</dd></div>
           </dl>
-          {workshop.id && !workshop.isDemo ? (
+          {workshop.id && canAcceptAttendees({ ...workshop, status: "published" }) ? (
             <RegistrationForm workshopId={workshop.id} isFull={availableSeats === 0} />
           ) : (
             <p className="mt-7 rounded-xl bg-[#eff3e9] px-4 py-3 text-sm leading-6 text-[#405549]">
-              Registration is disabled for this fictional example.
+              {workshop.isDemo || !workshop.id
+                ? "Registration is disabled for this fictional example."
+                : "Registration is closed because this workshop has already started."}
             </p>
           )}
         </aside>

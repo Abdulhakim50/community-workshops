@@ -8,6 +8,8 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { workshops } from "@/db/schema";
 import { requireOrganizer } from "@/lib/organizer";
+import { updateOrganizerWorkshop } from "@/lib/workshop-management";
+import { sendAttendeeNotification } from "@/lib/notifications";
 import { parseWorkshopForm, slugifyWorkshopTitle, type WorkshopFormField } from "@/lib/workshop-form";
 
 export type WorkshopActionState = {
@@ -32,20 +34,20 @@ export async function saveWorkshop(
     if (id) {
       if (!id.success) return { message: "This workshop link is invalid." };
 
-      const updated = await db
-        .update(workshops)
-        .set({ ...parsed.data, updatedAt: new Date() })
-        .where(and(
-          eq(workshops.id, id.data),
-          eq(workshops.organizerId, organizer.id),
-          ne(workshops.status, "canceled"),
-        ))
-        .returning({ id: workshops.id, slug: workshops.slug });
-
-      if (!updated[0]) return { message: "This workshop could not be edited." };
+      const updated = await updateOrganizerWorkshop(organizer.id, id.data, parsed.data);
+      if (updated.outcome === "unavailable") return { message: "This workshop could not be edited." };
+      if (updated.outcome === "below-confirmed") {
+        return { fieldErrors: { capacity: `There are ${updated.confirmedCount} confirmed registrations. Capacity must be at least ${updated.confirmedCount}.` } };
+      }
+      let unsent = 0;
+      for (const promotion of updated.promotions) {
+        const delivery = await sendAttendeeNotification({ ...promotion, kind: "promoted" });
+        if (delivery !== "sent") unsent += 1;
+      }
       revalidatePath("/organizer");
-      revalidatePath(`/workshops/${updated[0].slug}`);
-      redirect(`/organizer/workshops/${updated[0].id}/edit?saved=1`);
+      revalidatePath(`/organizer/workshops/${updated.id}/attendees`);
+      revalidatePath(`/workshops/${updated.slug}`);
+      redirect(`/organizer/workshops/${updated.id}/edit?saved=1&promoted=${updated.promotions.length}&unsent=${unsent}`);
     }
 
     const baseSlug = slugifyWorkshopTitle(parsed.data.title);

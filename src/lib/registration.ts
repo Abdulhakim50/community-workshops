@@ -2,6 +2,7 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { registrations, workshops } from "@/db/schema";
+import { canAcceptAttendees } from "@/lib/workshop-eligibility";
 
 export type RegistrationResult =
   | SuccessfulRegistrationResult
@@ -57,12 +58,13 @@ export async function registerAttendee(input: {
           venue: workshops.venue,
           address: workshops.address,
           isDemo: workshops.isDemo,
+          status: workshops.status,
         })
         .from(workshops)
         .where(and(eq(workshops.id, input.workshopId), eq(workshops.status, "published")))
         .for("update");
 
-      if (!workshop || workshop.isDemo || workshop.startsAt <= new Date()) {
+      if (!workshop || !canAcceptAttendees(workshop)) {
         return { outcome: "unavailable" };
       }
 
@@ -161,6 +163,9 @@ export async function getCancellationDetails(token: string) {
       attendeeName: registrations.attendeeName,
       registrationStatus: registrations.status,
       workshopTitle: workshops.title,
+      status: workshops.status,
+      isDemo: workshops.isDemo,
+      startsAt: workshops.startsAt,
     })
     .from(registrations)
     .innerJoin(workshops, eq(registrations.workshopId, workshops.id))
@@ -192,6 +197,8 @@ export async function cancelRegistration(token: string): Promise<CancellationRes
         timeZone: workshops.timeZone,
         venue: workshops.venue,
         address: workshops.address,
+        status: workshops.status,
+        isDemo: workshops.isDemo,
       })
       .from(workshops)
       .where(eq(workshops.id, candidate.workshopId))
@@ -215,7 +222,9 @@ export async function cancelRegistration(token: string): Promise<CancellationRes
       .set({ status: "canceled", canceledAt: new Date(), checkedInAt: null })
       .where(eq(registrations.id, registration.id));
 
-    if (registration.status !== "confirmed") return { outcome: "canceled" };
+    if (registration.status !== "confirmed" || !canAcceptAttendees(workshop)) {
+      return { outcome: "canceled" };
+    }
 
     const [nextInLine] = await tx
       .select({

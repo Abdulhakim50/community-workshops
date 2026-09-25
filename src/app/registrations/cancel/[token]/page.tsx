@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCancellationDetails } from "@/lib/registration";
 import { CancellationForm } from "./cancellation-form";
+import { canAcceptAttendees } from "@/lib/workshop-eligibility";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -26,7 +27,11 @@ export default async function CancelRegistrationPage({ params }: Props) {
             <h1 className="text-3xl font-bold tracking-[-0.04em]">Cancel your registration?</h1>
             <p className="mt-4 leading-7 text-[#596760]">
               {details.attendeeName}, this will cancel your {details.registrationStatus} registration for <strong>{details.workshopTitle}</strong>.
-              {details.registrationStatus === "confirmed" ? " If someone is waiting, the first person in line will be promoted immediately." : " You will lose your current place in the waitlist."}
+              {details.registrationStatus === "confirmed"
+                ? canAcceptAttendees(details)
+                  ? " If the workshop is still open when you cancel, the first waiting attendee will be promoted."
+                  : " You can still cancel. No waiting attendee will be promoted because this workshop is closed for registration."
+                : " You will lose your current place in the waitlist."}
             </p>
             <CancellationForm token={token} />
           </>

@@ -40,6 +40,14 @@ The migrations create organizers, workshops, registrations, and the account/sess
 
 When changing the schema, run `npm.cmd run db:generate`, review the generated SQL, and commit both the schema and migration. Never commit `.env.local` or a real connection string.
 
+## Safe capacity edits
+
+Registration and automatic promotion are available only for published, non-demo workshops before their start time. Database mutations check eligibility after acquiring the workshop row lock, so requests waiting across the cutoff are rejected. Attendees may still cancel an active booking after a workshop starts or is canceled, but no waitlisted attendee is promoted. Loaded workshop detail pages show a closed-registration message for started events; a form opened earlier is still protected by server-side validation when submitted.
+
+Organizers cannot save a workshop with fewer seats than its confirmed registrations. A rejected save leaves all workshop fields unchanged and displays the minimum allowed capacity under the seat input. Capacity checks and edits use the same PostgreSQL workshop row lock as registration and cancellation, so concurrent bookings cannot invalidate the check. Waitlisted and canceled registrations do not count toward this minimum.
+
+Increasing capacity on a published, non-demo workshop whose updated start time is still in the future automatically confirms waiting attendees, oldest first (registration ID breaks timestamp ties), up to the available seat count. Promotions happen inside the same transaction as the edit, before new registrations can take the seats. Repeating the same save does not promote people again. Promotion emails use the existing notification service after commit; the save notice reports promoted attendees and any unsent emails. Delivery failures do not undo the edit or promotion; automatic email retries are not yet implemented.
+
 ## Email notifications
 
 Registration confirmations, waitlist notices, and promotion notices use Resend. In production, set `APP_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, and a stable `CANCELLATION_TOKEN_SECRET` of at least 32 characters. `EMAIL_FROM` must use a domain verified in Resend. Without the Resend values, registration and cancellation still work and the application displays the private cancellation link in the browser, but no email is sent.
